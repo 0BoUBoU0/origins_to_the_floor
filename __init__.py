@@ -7,7 +7,7 @@ bl_info = {
     "warning": "",
     "category": "Object",
     "blender": (2,90,0),
-    "version": (1,3,31)
+    "version": (1,3,41)
 }
 
 # get addon name and version to use them automaticaly in the addon
@@ -24,10 +24,10 @@ separator = "-" * 20
 
 # define menu
 def originFloor_menu_draw(self,context):
-    self.layout.operator('object.origins_on_the_floor',icon="SORT_ASC")
-    self.layout.operator('object.origins_on_the_left',icon="SORT_ASC")
-    self.layout.operator('object.origins_on_the_right',icon="SORT_ASC")
-    self.layout.operator('object.origins_on_the_top',icon="SORT_DESC")
+    self.layout.operator('object.origins_on_the_floor',text="Origin to Floor", icon="SORT_ASC")
+    # self.layout.operator('object.origins_on_the_left',icon="SORT_ASC")
+    # self.layout.operator('object.origins_on_the_right',icon="SORT_ASC")
+    # self.layout.operator('object.origins_on_the_top',icon="SORT_DESC")
 
 def getverticeslist(object,smoothed):
     sel_obj = object
@@ -154,13 +154,13 @@ class OBJECT_OT_origins_on__the_floor(bpy.types.Operator):
             for vertex in obj_origin.data.vertices:
                 transformed_vert = obj_origin.matrix_world @ vertex.co
                 vert_coord_list.append(transformed_vert)    
-            print(f"{vert_coord_list=}")
+            #print(f"{vert_coord_list=}")
             flat_vert_coord_list = []
             # fatten vector list
             for sublist in vert_coord_list:
                 for item in sublist:
                     flat_vert_coord_list.append(item)
-            print(f"{flat_vert_coord_list=}")
+            #print(f"{flat_vert_coord_list=}")
 
             # get only the lowest X coordinates
             vert_x_list = flat_vert_coord_list[0::3]
@@ -175,9 +175,9 @@ class OBJECT_OT_origins_on__the_floor(bpy.types.Operator):
             vert_z_list = sorted(vert_z_list)
             z_lowest_value = vert_z_list[0] 
             
-            print(f"{vert_x_list=}")
-            print(f"{vert_y_list=}")
-            print(f"{vert_z_list=}")
+            # print(f"{vert_x_list=}")
+            # print(f"{vert_y_list=}")
+            # print(f"{vert_z_list=}")
             
             # get locations
             loc_x = bpy.data.objects[obj_origin.name].location.x
