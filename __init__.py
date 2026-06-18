@@ -118,8 +118,16 @@ class OBJECT_OT_ootf(bpy.types.Operator):
         print(f"\n {separator} Begin {Addon_Name} {separator} \n")
         
         # store cursor transforms
-        orig_cursor_loc = bpy.context.scene.cursor.location
-        orig_cursor_rot = bpy.context.scene.cursor.rotation_euler
+        src_cursor_loc = [
+                            bpy.context.scene.cursor.location.x,
+                            bpy.context.scene.cursor.location.y,
+                            bpy.context.scene.cursor.location.z
+                        ]
+        src_cursor_rot = [
+                            bpy.context.scene.cursor.rotation_euler.x,
+                            bpy.context.scene.cursor.rotation_euler.y,
+                            bpy.context.scene.cursor.rotation_euler.z
+                        ]
 
         # on 0 to avoid mistakes
         bpy.context.scene.cursor.location = (0,0,0)
@@ -249,8 +257,14 @@ class OBJECT_OT_ootf(bpy.types.Operator):
         # bpy.context.scene.cursor.rotation_euler = (0,0,0)
 
         # redo cursor transforms
-        bpy.context.scene.cursor.location = orig_cursor_loc
-        bpy.context.scene.cursor.rotation_euler = orig_cursor_rot
+        setattr(bpy.context.scene.cursor.location, "x", src_cursor_loc[0])
+        setattr(bpy.context.scene.cursor.location, "y", src_cursor_loc[1])
+        setattr(bpy.context.scene.cursor.location, "z", src_cursor_loc[2])
+
+        setattr(bpy.context.scene.cursor.rotation_euler, "x", src_cursor_rot[0])
+        setattr(bpy.context.scene.cursor.rotation_euler, "y", src_cursor_rot[1])
+        setattr(bpy.context.scene.cursor.rotation_euler, "z", src_cursor_rot[2])
+
         
         # select objects again    
         for sel_obj in selected_obj:
