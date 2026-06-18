@@ -7,7 +7,7 @@ bl_info = {
     "warning": "",
     "category": "Object",
     "blender": (2,90,0),
-    "version": (1,3,41)
+    "version": (1,3,6)
 }
 
 # get addon name and version to use them automaticaly in the addon
@@ -21,6 +21,23 @@ import bpy
 # define global variables
 debug_mode = False
 separator = "-" * 20
+
+## preferences
+class OOTF_Preferences(bpy.types.AddonPreferences):
+    bl_idname = __name__
+
+    still_origin_override : bpy.props.BoolProperty (name="",description="will override the operator behavior",default=False)
+    still_origin : bpy.props.BoolProperty (name="",description="By default behavior about the orgin. True means the mesh will move, False means the origin will move",default=True)
+
+    def draw(self, context):
+        layout = self.layout
+        box = layout.box()
+        box.active = self.still_origin_override
+        box.label(text="Still Origin override")
+        row = box.row()
+        row.prop(self, "still_origin_override")
+        row.label(text="Still origin: ")
+        row.prop(self, "still_origin") 
 
 # define menu
 def originFloor_menu_draw(self,context):
@@ -72,7 +89,7 @@ def getverticeslist(object,smoothed):
     
 
 # create operator UPPER_OT_lower and idname = upper.lower         
-class OBJECT_OT_origins_on__the_floor(bpy.types.Operator):
+class OBJECT_OT_ootf(bpy.types.Operator):
     bl_idname = 'object.origins_on_the_floor'
     bl_label = f"{Addon_Name} - {Addon_Version}"
     bl_description = "Move the origin at the lower part of your selected meshes"
@@ -218,9 +235,10 @@ class OBJECT_OT_origins_on__the_floor(bpy.types.Operator):
             bpy.context.scene.cursor.location = (pos_x,pos_y,pos_z)
             bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
             # delete smooth object if true
-            if self.origins_XY_smoothed == True:
+            if self.origins_XY_smoothed:
                 bpy.data.objects.remove(bpy.data.objects[object_copy.name], do_unlink=True)
-            if self.still_origin == True:
+            prefs = bpy.context.preferences.addons[__name__].preferences
+            if prefs.still_origin_override and prefs.still_origin or self.still_origin:
                 bpy.data.objects[sel_obj].location.x = obj_locations_x
                 bpy.data.objects[sel_obj].location.y = obj_locations_y
                 bpy.data.objects[sel_obj].location.z = obj_locations_z
@@ -230,7 +248,7 @@ class OBJECT_OT_origins_on__the_floor(bpy.types.Operator):
         # bpy.context.scene.cursor.location = (0,0,0)
         # bpy.context.scene.cursor.rotation_euler = (0,0,0)
 
-        # store cursor transforms
+        # redo cursor transforms
         bpy.context.scene.cursor.location = orig_cursor_loc
         bpy.context.scene.cursor.rotation_euler = orig_cursor_rot
         
@@ -253,8 +271,15 @@ class OBJECT_OT_origins_on__the_floor(bpy.types.Operator):
 # create keymap list
 ootf_addon_keymaps = []
 
+# list all classes
+classes = (
+    OOTF_Preferences,
+    OBJECT_OT_ootf,
+    )
+
 def register():
-    bpy.utils.register_class(OBJECT_OT_origins_on__the_floor)
+    for cls in classes:
+        bpy.utils.register_class(cls)
     bpy.types.VIEW3D_MT_object.append(originFloor_menu_draw)
     # add keymap
     if bpy.context.window_manager.keyconfigs.addon:
@@ -267,9 +292,14 @@ def register():
         ootf_addon_keymaps.append((keymap, keymapitem))
 
 def unregister():
-    bpy.utils.unregister_class(OBJECT_OT_origins_on__the_floor)
+    for cls in reversed(classes):
+        bpy.utils.unregister_class(cls)
     bpy.types.VIEW3D_MT_object.remove(originFloor_menu_draw)
     # remove keymap
     for keymap, keymapitem in ootf_addon_keymaps:
         keymap.keymap_items.remove(keymapitem)
     ootf_addon_keymaps.clear()
+
+
+if __name__ == "__main__":
+    register()
